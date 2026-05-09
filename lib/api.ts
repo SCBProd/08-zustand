@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { AxiosResponse } from "axios";
-import type { Note, CreateNoteDto } from "@/types/note";
+import type { Note, CreateNoteDto, Tag } from "@/types/note";
 
 export interface NotesResponse {
   notes: Note[];
@@ -21,10 +21,12 @@ const api = axios.create({
   },
 });
 
+// =======================
 // GET notes
+// =======================
 export const fetchNotes = async (params: {
   search?: string;
-  tag?: string;
+  tag?: Tag;
   page?: number;
   perPage?: number;
   sortBy?: "created" | "updated";
@@ -36,26 +38,34 @@ export const fetchNotes = async (params: {
   return response.data;
 };
 
-// CREATE note ✅ FIX
-export const createNote = async (data: CreateNoteDto) => {
-  const res = await api.post<Note>("/notes", data);
-  return res.data;
+// =======================
+// CREATE note
+// =======================
+export const createNote = async (data: CreateNoteDto): Promise<Note> => {
+  const response: AxiosResponse<Note> = await api.post("/notes", data);
+  return response.data;
 };
 
+// =======================
 // DELETE note
+// =======================
 export const deleteNote = async (id: string): Promise<Note> => {
   const response: AxiosResponse<Note> = await api.delete(`/notes/${id}`);
   return response.data;
 };
 
+// =======================
 // GET note by id
+// =======================
 export const fetchNoteById = async (id: string): Promise<Note> => {
   const response: AxiosResponse<Note> = await api.get(`/notes/${id}`);
   return response.data;
 };
 
-// GET categories
-export const getCategories = async (): Promise<string[]> => {
-  const response: AxiosResponse<string[]> = await api.get("/notes/categories");
+// =======================
+// GET categories (ВАЖЛИВО: Tag[] а не string[])
+// =======================
+export const getCategories = async (): Promise<Tag[]> => {
+  const response: AxiosResponse<Tag[]> = await api.get("/notes/categories");
   return response.data;
 };
