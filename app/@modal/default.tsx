@@ -1,3 +1,7 @@
-export default function Default() {
-  return null;
+
+const ModalPreview = () => {
+
+    return null
 }
+
+export default ModalPreview

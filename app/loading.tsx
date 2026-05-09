@@ -1,7 +1,12 @@
-// app/notes/loading.tsx
 
-const Loading = () => {
-  return <p>Loading, please wait...</p>
+const Loader = () => {
+
+    return (
+        <>
+            <p>Loading, please wait...</p>
+
+        </>
+    )
 }
 
-export default Loading;
+export default Loader

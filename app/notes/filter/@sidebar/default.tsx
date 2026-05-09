@@ -1,23 +1,20 @@
-import Link from "next/link";
+import Link from 'next/link';
+import css from './SidebarNotes.module.css';
+import { tagNames } from '@/lib/tags';
 
-type Props = {
-  categories: string[];
-};
+const SidebarNotes = () => {
 
-export default function Sidebar({ categories }: Props) {
-  return (
-    <ul>
-      <li key="all">
-        <Link href="/notes/filter/all">All</Link>
-      </li>
+    return (
+        <ul className={css.menuList}>
+            {tagNames.map((tag) => <li className={css.menuItem} key={tag}>
+                <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
+                    {tag}
+                </Link>
+            </li>)}
 
-      {categories.map((category) => (
-        <li key={category}>
-          <Link href={`/notes/filter/${category}`}>
-            {category}
-          </Link>
-        </li>
-      ))}
-    </ul>
-  );
+        </ul>
+
+    )
 }
+
+export default SidebarNotes

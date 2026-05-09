@@ -1,79 +1,67 @@
-"use client";
+'use client'
+import Pagination from '@/components/Pagination/Pagination';
+import SearchBox from '@/components/SearchBox/SearchBox';
+import { fetchNotes } from '@/lib/api';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import css from './page.module.css';
+import NoteList from '@/components/NoteList/NoteList';
+import { Toaster, toast } from 'react-hot-toast';
+import Link from 'next/link';
 
-import { fetchNotes } from "@/lib/api";
-import type { Tag } from "@/types/note";
-
-import SearchBox from "@/components/SearchBox/SearchBox";
-import NoteList from "@/components/NoteList/NoteList";
-import Pagination from "@/components/Pagination/Pagination";
 
 type Props = {
-  tag?: string;
-};
 
-// єдине джерело правди для тегів
-const TAGS: Tag[] = [
-  "Work",
-  "Personal",
-  "Meeting",
-  "Shopping",
-  "Todo",
-];
-
-// type guard без дублювання логіки
-const isTag = (value?: string): value is Tag => {
-  return !!value && (TAGS as string[]).includes(value);
-};
-
-export default function NotesClient({ tag }: Props) {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(search);
-  const [page, setPage] = useState(1);
-
-  // debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["notes", page, tag, debouncedSearch],
-    queryFn: () =>
-      fetchNotes({
-        page,
-        tag: isTag(tag) ? tag : undefined,
-        search: debouncedSearch || undefined,
-      }),
-    refetchOnMount: false,
-  });
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error loading notes</p>;
-
-  const notes = data?.notes ?? [];
-
-  return (
-    <>
-      <SearchBox value={search} onChange={setSearch} />
-
-      <Link href="/notes/action/create">
-        Create note
-      </Link>
-
-      {notes.length > 0 && <NoteList notes={notes} />}
-
-      <Pagination
-        currentPage={page}
-        totalPages={data?.totalPages ?? 1}
-        setPage={setPage}
-      />
-    </>
-  );
+    tag?: string | undefined;
 }
+
+const NotesClient = ({ tag }: Props) => {
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [debouncedSearch] = useDebounce(searchQuery, 500)
+
+    const { data, isSuccess } = useQuery({
+        queryKey: ['notes', currentPage, debouncedSearch, tag],
+        queryFn: () => fetchNotes(currentPage, debouncedSearch, tag),
+        placeholderData: keepPreviousData,
+        refetchOnMount: false,
+
+
+    })
+    const totalPages = data?.totalPages ?? 0;
+
+
+
+
+    useEffect(() => {
+        if (isSuccess && (data.notes.length === 0)) {
+            toast.error("No notes found for your request.");
+        }
+    }, [isSuccess, data])
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch])
+
+    return (
+        <>
+            <div className={css.app}>
+                <header className={css.toolbar}>
+                    <SearchBox searchValue={searchQuery} onSearch={setSearchQuery} />
+                    {isSuccess && totalPages > 1 && <Pagination page={currentPage} onChange={setCurrentPage} total_page={totalPages} />}
+                    <Link className={css.button} href={'/notes/action/create'}>Create note +</Link>
+
+                </header>
+                <Toaster />
+                {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
+
+            </div>
+
+        </>
+    )
+}
+
+export default NotesClient

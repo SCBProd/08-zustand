@@ -1,69 +1,54 @@
 import axios from "axios";
-import type { AxiosResponse } from "axios";
-import type { Note, CreateNoteDto, Tag } from "@/types/note";
+import type { NewNote, Note } from "../types/note";
 
-export interface NotesResponse {
-  notes: Note[];
-  totalPages: number;
+
+interface fetchNotesResponse {
+    notes: Note[];
+    totalPages: number;
+}
+interface Params {
+    page: number;
+    perPage: number;
+    search: string;
+    tag?: string;
 }
 
-export interface ApiError {
-  message: string;
-  error?: string;
+
+const myKey = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN
+
+axios.defaults.baseURL = "https://notehub-public.goit.study/api";
+axios.defaults.headers.common['Authorization'] = `Bearer ${myKey}`;
+
+
+export const fetchNotes = async (page: number, search: string, tag?: string): Promise<fetchNotesResponse> => {
+
+    const params: Params = {
+        page,
+        perPage: 10,
+        search,
+        tag,
+    };
+
+    const response = await axios.get<fetchNotesResponse>("/notes", {
+        params,
+    })
+
+
+    return response.data;
+
 }
 
-const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+export const createNote = async (newNote: NewNote) => {
+    const res = await axios.post<Note>("/notes", newNote)
+    return res.data
+}
 
-const api = axios.create({
-  baseURL: "https://notehub-public.goit.study/api",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+export const deleteNote = async (noteId: string) => {
+    const res = await axios.delete<Note>(`/notes/${noteId}`);
+    return res.data
+}
 
-
-export const fetchNotes = async (params: {
-  search?: string;
-  tag?: string;  
-  page?: number;
-  perPage?: number;
-  sortBy?: "created" | "updated";
-}): Promise<NotesResponse> => {
-  const response: AxiosResponse<NotesResponse> = await api.get("/notes", {
-    params,
-  });
-
-  return response.data;
-};
-
-// =======================
-// CREATE note
-// =======================
-export const createNote = async (data: CreateNoteDto): Promise<Note> => {
-  const response: AxiosResponse<Note> = await api.post("/notes", data);
-  return response.data;
-};
-
-// =======================
-// DELETE note
-// =======================
-export const deleteNote = async (id: string): Promise<Note> => {
-  const response: AxiosResponse<Note> = await api.delete(`/notes/${id}`);
-  return response.data;
-};
-
-// =======================
-// GET note by id
-// =======================
-export const fetchNoteById = async (id: string): Promise<Note> => {
-  const response: AxiosResponse<Note> = await api.get(`/notes/${id}`);
-  return response.data;
-};
-
-// =======================
-// GET categories
-// =======================
-export const getCategories = async (): Promise<Tag[]> => {
-  const response: AxiosResponse<Tag[]> = await api.get("/notes/categories");
-  return response.data;
-};
+export const fetchNoteById = async (noteId: string) => {
+    const res = await axios.get<Note>(`/notes/${noteId}`)
+    return res.data
+}

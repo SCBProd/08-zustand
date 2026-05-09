@@ -1,44 +1,48 @@
-/// components\Modal\Modal.tsx
+'use client'
+import { createPortal } from 'react-dom';
+import css from './Modal.module.css';
+import { useEffect } from 'react';
 
-"use client";
-import css from "./Modal.module.css";
-import { createPortal } from "react-dom";
-import type { ReactNode } from "react";
-import { useEffect } from "react";
+interface ModalProps {
+    children: React.ReactNode;
+    onClose: () => void;
+}
 
-type Props = {
-  children: ReactNode;
-  onClose: () => void;
-};
+export default function Modal({ children, onClose }: ModalProps) {
 
-export default function Modal({ children, onClose }: Props) {
-  const root = document.getElementById("modal-root")!;
+    const handleBackDropClick = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.target === event.currentTarget) {
+            onClose();
+        }
+    }
 
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    useEffect(() => {
 
-    window.addEventListener("keydown", handleEsc);
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = 'hidden';
 
-    // лок скролу сторінки
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = '';
+        }
+    })
 
-    return () => {
-      window.removeEventListener("keydown", handleEsc);
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [onClose]);
+    return createPortal(
+        <div
+            onClick={handleBackDropClick}
+            className={css.backdrop}
+            role="dialog"
+            aria-modal="true"
+        >
+            <div className={css.modal}>
+                {children}
+            </div>
+        </div>, document.getElementById("modal-root") as HTMLDivElement
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-
-  return createPortal(
-    <div className={css.backdrop} onClick={handleBackdropClick}>
-      <div className={css.modal}>{children}</div>
-    </div>,
-    root
-  );
+    )
 }

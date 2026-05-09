@@ -1,91 +1,113 @@
-"use client";
+'use client'
 
-import { createNote } from "@/lib/api";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useNoteDraftStore } from "@/lib/stores/noteStore";
-import type { CreateNoteDto, Tag } from "@/types/note";
-import styles from "./NoteForm.module.css";
+import { QueryClient, useMutation } from '@tanstack/react-query';
+import * as Yup from 'yup';
 
-type Props = {
-  categories: Tag[];
-};
+import css from './NoteForm.module.css';
+import { ChangeEvent, useEffect, useId } from 'react';
+import { createNote } from '@/lib/api';
+import type { NewNote } from '../../types/note';
+import { useRouter } from 'next/navigation';
+import toast, { Toaster } from 'react-hot-toast';
+import { useNoteDraft } from '@/lib/store/noteStore';
 
-const NoteForm = ({ categories }: Props) => {
-  const router = useRouter();
+const NotesSchema = Yup.object().shape({
+    title: Yup.string().min(3).max(50).required(),
+    content: Yup.string().max(500),
+    tag: Yup.string().oneOf(["Todo", "Work", 'Personal', 'Meeting', 'Shopping']).required(),
+});
 
-  const { draft, setDraft, clearDraft } = useNoteDraftStore();
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
+export default function NoteForm() {
+    const { draft, setDraft, clearDraft } = useNoteDraft();
 
-    setDraft({
-      ...draft,
-      [name]: value,
-    });
-  };
+    const fieldId = useId();
+    const router = useRouter();
 
-  const { mutate } = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      clearDraft();
-      router.push("/notes/filter/all");
-    },
-  });
+    const { mutate, isError, isPending } = useMutation({
+        mutationFn: (newNote: NewNote) => createNote(newNote),
+        onSuccess() {
+            router.push('/notes/filter/All');
+            toast.success("Note created successfully!");
+            clearDraft();
+        }
+    })
 
-  const handleSubmit = (formData: FormData) => {
-    const values: CreateNoteDto = {
-      title: String(formData.get("title") || ""),
-      content: String(formData.get("content") || ""),
-      tag: formData.get("tag") as Tag,
-    };
 
-    mutate(values);
-  };
+    const handleSubmit = (formData: FormData) => {
+        const data = Object.fromEntries(formData) as unknown as NewNote;
+        mutate(data);
 
-  return (
-    <form className={styles.form} action={handleSubmit}>
-      <label>
-        Title
-        <input
-          name="title"
-          defaultValue={draft.title}
-          onChange={handleChange}
-        />
-      </label>
+    }
 
-      <label>
-        Content
-        <textarea
-          name="content"
-          defaultValue={draft.content}
-          onChange={handleChange}
-        />
-      </label>
+    const handleChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLTextAreaElement>) => {
+        setDraft({
+            ...(draft as NewNote),
+            [e.target.name as keyof NewNote]: e.target.value,
+        })
 
-      <label>
-        Tag
-        <select name="tag" defaultValue={draft.tag} onChange={handleChange}>
-          {categories.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </label>
+    }
 
-      <div className={styles.actions}>
-        <button type="submit">Create</button>
-        <button type="button" onClick={() => router.push("/notes/filter/all")}>
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-};
 
-export default NoteForm;
+    const handleCancel = () => {
+        router.back();
+
+    }
+
+    useEffect(() => {
+        if (isError) {
+            toast.error("Oops.. There was an error creating the note. Please try again later.");
+        }
+    }, [isError])
+
+
+    return (
+        <>
+
+            <form action={handleSubmit} className={css.form}>
+                <div className={css.formGroup}>
+                    <label htmlFor={`title-${fieldId}`}>Title</label>
+                    <input id={`title-${fieldId}`} type="text" name="title" className={css.input} onChange={handleChange} defaultValue={draft.title} />
+                    {/* <ErrorMessage component="span" name="title" className={css.error} /> */}
+                </div>
+
+                <div className={css.formGroup}>
+                    <label htmlFor={`content-${fieldId}`}>Content</label>
+                    <textarea
+                        id={`content-${fieldId}`}
+                        name="content"
+                        rows={8}
+                        className={css.textarea} onChange={handleChange} defaultValue={draft.content}
+                    />
+                    {/* <ErrorMessage component="span" name="content" className={css.error} /> */}
+                </div>
+
+                <div className={css.formGroup}>
+                    <label htmlFor={`tag-${fieldId}`}>Tag</label>
+                    <select id={`tag-${fieldId}`} name="tag" className={css.select} onChange={handleChange} defaultValue={draft.tag}>
+                        <option value="">-- Choose tag --</option>
+                        <option value="Todo">Todo</option>
+                        <option value="Work">Work</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Meeting">Meeting</option>
+                        <option value="Shopping">Shopping</option>
+                    </select>
+                    {/* <ErrorMessage component="span" name="tag" className={css.error} /> */}
+                </div>
+
+                <div className={css.actions}>
+                    <button type="button" className={css.cancelButton} onClick={handleCancel}>
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className={css.submitButton}
+                        disabled={isPending}>
+                        {isPending ? 'Creating a note...' : 'Create note'}
+                    </button>
+                </div>
+            </form>
+            <Toaster />
+        </>
+    )
+}
