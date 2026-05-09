@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchNotes } from "@/lib/api";
+import type { Tag } from "@/types/note";
 
 import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteList from "@/components/NoteList/NoteList";
@@ -14,12 +15,25 @@ type Props = {
   tag?: string;
 };
 
+// безпечна перевірка enum Tag
+const isTag = (value?: string): value is Tag => {
+  if (!value) return false;
+
+  return (
+    value === "Work" ||
+    value === "Personal" ||
+    value === "Meeting" ||
+    value === "Shopping" ||
+    value === "Todo"
+  );
+};
+
 export default function NotesClient({ tag }: Props) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [page, setPage] = useState(1);
 
-  // debounce
+  // debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -33,7 +47,7 @@ export default function NotesClient({ tag }: Props) {
     queryFn: () =>
       fetchNotes({
         page,
-        tag: tag || undefined,
+        tag: isTag(tag) ? tag : undefined,
         search: debouncedSearch || undefined,
       }),
     refetchOnMount: false,
