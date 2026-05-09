@@ -15,17 +15,18 @@ type Props = {
   tag?: string;
 };
 
-// безпечна перевірка enum Tag
-const isTag = (value?: string): value is Tag => {
-  if (!value) return false;
+// єдине джерело правди для тегів
+const TAGS: Tag[] = [
+  "Work",
+  "Personal",
+  "Meeting",
+  "Shopping",
+  "Todo",
+];
 
-  return (
-    value === "Work" ||
-    value === "Personal" ||
-    value === "Meeting" ||
-    value === "Shopping" ||
-    value === "Todo"
-  );
+// type guard без дублювання логіки
+const isTag = (value?: string): value is Tag => {
+  return !!value && (TAGS as string[]).includes(value);
 };
 
 export default function NotesClient({ tag }: Props) {
@@ -33,7 +34,7 @@ export default function NotesClient({ tag }: Props) {
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [page, setPage] = useState(1);
 
-  // debounce search
+  // debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);

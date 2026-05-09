@@ -21,12 +21,10 @@ const api = axios.create({
   },
 });
 
-// =======================
-// GET notes
-// =======================
+
 export const fetchNotes = async (params: {
   search?: string;
-  tag?: string | Tag;   // 👈 ВОТ ТУТ ГОЛОВНА ЗМІНА
+  tag?: string;  
   page?: number;
   perPage?: number;
   sortBy?: "created" | "updated";
