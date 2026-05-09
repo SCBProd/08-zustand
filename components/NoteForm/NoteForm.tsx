@@ -4,11 +4,11 @@ import { createNote } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useNoteDraftStore } from "@/lib/stores/noteStore";
-import type { CreateNoteDto } from "@/types/note";
+import type { CreateNoteDto, Tag } from "@/types/note";
 import styles from "./NoteForm.module.css";
 
 type Props = {
-  categories: string[];
+  categories: Tag[];
 };
 
 const NoteForm = ({ categories }: Props) => {
@@ -41,14 +41,10 @@ const NoteForm = ({ categories }: Props) => {
     const values: CreateNoteDto = {
       title: String(formData.get("title") || ""),
       content: String(formData.get("content") || ""),
-      tag: formData.get("tag") as CreateNoteDto["tag"],
+      tag: formData.get("tag") as Tag,
     };
 
     mutate(values);
-  };
-
-  const handleCancel = () => {
-    router.push("/notes/filter/all");
   };
 
   return (
@@ -73,11 +69,7 @@ const NoteForm = ({ categories }: Props) => {
 
       <label>
         Tag
-        <select
-          name="tag"
-          defaultValue={draft.tag}
-          onChange={handleChange}
-        >
+        <select name="tag" defaultValue={draft.tag} onChange={handleChange}>
           {categories.map((t) => (
             <option key={t} value={t}>
               {t}
@@ -88,7 +80,7 @@ const NoteForm = ({ categories }: Props) => {
 
       <div className={styles.actions}>
         <button type="submit">Create</button>
-        <button type="button" onClick={handleCancel}>
+        <button type="button" onClick={() => router.push("/notes/filter/all")}>
           Cancel
         </button>
       </div>

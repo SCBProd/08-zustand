@@ -7,6 +7,11 @@ export interface NotesResponse {
   totalPages: number;
 }
 
+export interface ApiError {
+  message: string;
+  error?: string;
+}
+
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
 const api = axios.create({
@@ -31,10 +36,10 @@ export const fetchNotes = async (params: {
   return response.data;
 };
 
-// CREATE note
-export const createNote = async (data: CreateNoteDto): Promise<Note> => {
-  const response: AxiosResponse<Note> = await api.post("/notes", data);
-  return response.data;
+// CREATE note ✅ FIX
+export const createNote = async (data: CreateNoteDto) => {
+  const res = await api.post<Note>("/notes", data);
+  return res.data;
 };
 
 // DELETE note

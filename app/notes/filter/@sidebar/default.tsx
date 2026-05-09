@@ -1,26 +1,23 @@
-// app/(public routes)/notes/filter/@sidebar/default.tsx
+import Link from "next/link";
 
-import Link from 'next/link';
-import { getCategories } from '@/lib/api';
-
-const NotesSidebar = async () => {
-  const categories = await getCategories();
-
-  return (
-    <>
-      <Link href="/notes/action/create">Create note</Link>
-      <ul>
-        <li>
-          <Link href={`/notes/filter/all`}>All notes</Link>
-        </li>
-        {categories.map((category) => (
-          <li key={category.id}>
-            <Link href={`/notes/filter/${category.id}`}>{category.name}</Link>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
+type Props = {
+  categories: string[];
 };
 
-export default NotesSidebar;
+export default function Sidebar({ categories }: Props) {
+  return (
+    <ul>
+      <li key="all">
+        <Link href="/notes/filter/all">All</Link>
+      </li>
+
+      {categories.map((category) => (
+        <li key={category}>
+          <Link href={`/notes/filter/${category}`}>
+            {category}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
