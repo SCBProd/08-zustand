@@ -1,4 +1,6 @@
+/// components\Modal\Modal.tsx
 
+"use client";
 import css from "./Modal.module.css";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
