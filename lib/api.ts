@@ -22,7 +22,7 @@ export type NewNoteData = {
 
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
-// 🔥 створюємо інстанс axios
+
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
   headers: {

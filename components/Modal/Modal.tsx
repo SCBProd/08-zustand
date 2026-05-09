@@ -18,7 +18,7 @@ export default function Modal({ children, onClose }: Props) {
 
     window.addEventListener("keydown", handleEsc);
 
-    // ❗ Блокування скролу сторінки
+    // лок скролу сторінки
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
