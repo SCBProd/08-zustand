@@ -26,7 +26,7 @@ const api = axios.create({
 // =======================
 export const fetchNotes = async (params: {
   search?: string;
-  tag?: Tag;
+  tag?: string | Tag;   // 👈 ВОТ ТУТ ГОЛОВНА ЗМІНА
   page?: number;
   perPage?: number;
   sortBy?: "created" | "updated";
@@ -63,7 +63,7 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
 };
 
 // =======================
-// GET categories (ВАЖЛИВО: Tag[] а не string[])
+// GET categories
 // =======================
 export const getCategories = async (): Promise<Tag[]> => {
   const response: AxiosResponse<Tag[]> = await api.get("/notes/categories");
