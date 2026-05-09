@@ -1,5 +1,3 @@
-// lib\api.ts
-
 import axios from "axios";
 import type { AxiosResponse } from "axios";
 import type { Note, CreateNoteDto } from "@/types/note";
@@ -9,19 +7,7 @@ export interface NotesResponse {
   totalPages: number;
 }
 
-export interface ApiError {
-  message: string;
-  error?: string;
-}
-
-export type NewNoteData = {
-  title: string;
-  content: string;
-  categoryId: string;
-};
-
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
-
 
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
@@ -46,31 +32,25 @@ export const fetchNotes = async (params: {
 };
 
 // CREATE note
-export const createNote = async (data: NewNoteData) => {
-  const res = await axios.post<Note>('/notes', data);
-  return res.data;
+export const createNote = async (data: CreateNoteDto): Promise<Note> => {
+  const response: AxiosResponse<Note> = await api.post("/notes", data);
+  return response.data;
 };
 
 // DELETE note
-export const deleteNote = async (
-  id: string
-): Promise<Note> => {
+export const deleteNote = async (id: string): Promise<Note> => {
   const response: AxiosResponse<Note> = await api.delete(`/notes/${id}`);
-
   return response.data;
 };
 
 // GET note by id
-export const fetchNoteById = async (
-  id: string
-): Promise<Note> => {
+export const fetchNoteById = async (id: string): Promise<Note> => {
   const response: AxiosResponse<Note> = await api.get(`/notes/${id}`);
-
   return response.data;
-}; 
-// GET all categories
+};
+
+// GET categories
 export const getCategories = async (): Promise<string[]> => {
   const response: AxiosResponse<string[]> = await api.get("/notes/categories");
-
   return response.data;
 };

@@ -1,9 +1,10 @@
 "use client";
 
-import { createNote, NewNoteData } from "@/lib/api";
+import { createNote } from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useNoteDraftStore } from "@/lib/stores/noteStore";
+import type { CreateNoteDto } from "@/types/note";
 import styles from "./NoteForm.module.css";
 
 type Props = {
@@ -16,11 +17,11 @@ const NoteForm = ({ categories }: Props) => {
   const { draft, setDraft, clearDraft } = useNoteDraftStore();
 
   const handleChange = (
-    event: React.ChangeEvent<
+    e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    const { name, value } = event.target;
+    const { name, value } = e.target;
 
     setDraft({
       ...draft,
@@ -37,7 +38,12 @@ const NoteForm = ({ categories }: Props) => {
   });
 
   const handleSubmit = (formData: FormData) => {
-    const values = Object.fromEntries(formData) as NewNoteData;
+    const values: CreateNoteDto = {
+      title: String(formData.get("title") || ""),
+      content: String(formData.get("content") || ""),
+      tag: formData.get("tag") as CreateNoteDto["tag"],
+    };
+
     mutate(values);
   };
 
@@ -47,17 +53,16 @@ const NoteForm = ({ categories }: Props) => {
 
   return (
     <form className={styles.form} action={handleSubmit}>
-      <label className={styles.label}>
+      <label>
         Title
         <input
-          type="text"
           name="title"
           defaultValue={draft.title}
           onChange={handleChange}
         />
       </label>
 
-      <label className={styles.label}>
+      <label>
         Content
         <textarea
           name="content"
@@ -66,16 +71,16 @@ const NoteForm = ({ categories }: Props) => {
         />
       </label>
 
-      <label className={styles.label}>
-        Category
+      <label>
+        Tag
         <select
-          name="categoryId"
-          defaultValue={draft.categoryId}
+          name="tag"
+          defaultValue={draft.tag}
           onChange={handleChange}
         >
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
+          {categories.map((t) => (
+            <option key={t} value={t}>
+              {t}
             </option>
           ))}
         </select>
@@ -84,7 +89,8 @@ const NoteForm = ({ categories }: Props) => {
       <div className={styles.actions}>
         <button type="submit">Create</button>
         <button type="button" onClick={handleCancel}>
-          Cancel</button>
+          Cancel
+        </button>
       </div>
     </form>
   );

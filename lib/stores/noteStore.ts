@@ -1,32 +1,41 @@
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { NewNoteData } from "../api";
+import type { CreateNoteDto } from "@/types/note";
 
 type NoteDraftStore = {
-  draft: NewNoteData;
-  setDraft: (note: NewNoteData) => void;
+  draft: CreateNoteDto;
+  setDraft: (note: CreateNoteDto) => void;
   clearDraft: () => void;
 };
 
-const initialDraft: NewNoteData = {
+const initialDraft: CreateNoteDto = {
   title: "",
   content: "",
-  categoryId: "",
+  tag: "Todo",
 };
 
 export const useNoteDraftStore = create<NoteDraftStore>()(
   persist(
     (set) => ({
-      draft: { ...initialDraft },
+      draft: initialDraft,
 
-      setDraft: (note) => set(() => ({ draft: note })),
+      setDraft: (note) =>
+        set(() => ({
+          draft: note,
+        })),
 
       clearDraft: () =>
-        set(() => ({ draft: { ...initialDraft } })),
+        set(() => ({
+          draft: initialDraft,
+        })),
     }),
     {
       name: "note-draft",
-      partialize: (state) => ({ draft: state.draft }),
+      partialize: (state) => ({
+        draft: state.draft,
+      }),
     }
   )
 );
