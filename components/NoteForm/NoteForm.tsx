@@ -28,7 +28,6 @@ export default function NoteForm() {
 
   const fieldId = useId();
   const router = useRouter();
-
   const queryClient = useQueryClient();
 
   const { mutate, isError, isPending } = useMutation({
@@ -38,9 +37,9 @@ export default function NoteForm() {
       toast.success("Note created successfully!");
       clearDraft();
 
-      // 🔥 ключовий момент — оновлення кешу списку нотаток
       await queryClient.invalidateQueries({
         queryKey: ["notes"],
+        exact: false,
       });
 
       router.push("/notes/filter/All");
@@ -130,7 +129,11 @@ export default function NoteForm() {
             Cancel
           </button>
 
-          <button type="submit" className={css.submitButton} disabled={isPending}>
+          <button
+            type="submit"
+            className={css.submitButton}
+            disabled={isPending}
+          >
             {isPending ? "Creating a note..." : "Create note"}
           </button>
         </div>
